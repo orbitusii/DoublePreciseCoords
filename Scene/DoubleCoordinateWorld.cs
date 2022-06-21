@@ -15,9 +15,9 @@ namespace DoublePreciseCoords
     /// <summary>
     /// Double-Precision Coordinate Field - the main component required in a scene to enable DCPS behavior.
     /// </summary>
-    public class DoubleCoordinateField : MonoBehaviour
+    public class DoubleCoordinateWorld : MonoBehaviour
     {
-        protected static DoubleCoordinateField singleton;
+        protected static DoubleCoordinateWorld singleton;
 
         protected static List<WrappedBody> AllBodies = new List<WrappedBody>();
 

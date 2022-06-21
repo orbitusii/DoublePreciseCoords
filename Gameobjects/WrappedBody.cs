@@ -56,7 +56,7 @@ namespace DoublePreciseCoords
 
         protected virtual void OnEnable()
         {
-            DoubleCoordinateField.Add(this);
+            DoubleCoordinateWorld.Add(this);
 
             if (AutoRefreshBoundingRadius)
             {
@@ -82,7 +82,7 @@ namespace DoublePreciseCoords
 
         protected virtual void OnDisable()
         {
-            DoubleCoordinateField.Remove(this);
+            DoubleCoordinateWorld.Remove(this);
         }
 
         protected virtual void OnDrawGizmos()

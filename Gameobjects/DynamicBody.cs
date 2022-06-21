@@ -35,7 +35,7 @@ namespace DoublePreciseCoords
 
         protected virtual void FixedUpdate()
         {
-            if (!DoubleCoordinateField.Exists())
+            if (!DoubleCoordinateWorld.Exists())
             {
                 Debug.LogWarning("Wrapped Rigidbodies exist without a Wrapper Hub!");
                 enabled = false;
