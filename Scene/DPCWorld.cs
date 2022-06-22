@@ -17,9 +17,9 @@ namespace DoublePreciseCoords
     /// </summary>
     public class DPCWorld : MonoBehaviour
     {
-        protected static DPCWorld singleton;
+        public static DPCWorld Singleton { get; protected set; }
 
-        protected static List<DPCObject> AllBodies = new List<DPCObject>();
+        public static List<DPCObject> AllBodies { get; protected set; } = new List<DPCObject>();
 
         [Tooltip("The absolute size of the physics area. Maximum positions are 1/2 of the size.")]
         public Vector2 PhysicsAreaSize = Vector2.one * 4000;
@@ -27,12 +27,15 @@ namespace DoublePreciseCoords
 
         private static float dt;
 
+        public delegate void BodiesChangedCallback();
+        public static BodiesChangedCallback OnBodiesChanged;
+
         [field: SerializeField]
         public bool WrapSpace { get; protected set; } = true;
 
         public static bool Exists ()
         {
-            if(singleton == null)
+            if(Singleton == null)
             {
                 DPCWorld foundDCW = FindObjectOfType(typeof(DPCWorld)) as DPCWorld;
 
@@ -41,7 +44,7 @@ namespace DoublePreciseCoords
                     return false;
                 }
                 
-                singleton = foundDCW;
+                Singleton = foundDCW;
             }
 
             return true;
@@ -53,7 +56,7 @@ namespace DoublePreciseCoords
             {
                 GameObject newWorld = new GameObject();
                 newWorld.name = "DoubleCoordinateWorld";
-                singleton = newWorld.AddComponent(typeof(DPCWorld)) as DPCWorld;
+                Singleton = newWorld.AddComponent(typeof(DPCWorld)) as DPCWorld;
             }
         }
         public static void Add(DPCObject body)
@@ -61,12 +64,16 @@ namespace DoublePreciseCoords
             if (!AllBodies.Contains(body))
             {
                 AllBodies.Add(body);
+
+                OnBodiesChanged.Invoke();
             }
         }
 
         public static void Remove(DPCObject body)
         {
             AllBodies.Remove(body);
+
+            OnBodiesChanged.Invoke();
         }
 
         protected virtual void FixedUpdate()
@@ -97,8 +104,7 @@ namespace DoublePreciseCoords
                 // Used to prevent wrapper overlap and erroneous collisions.
                 float maxDepth = 0;
 
-                // Iterate through and place everything in the world, then update the Physics system's
-                // understanding of everyone's position.
+                // Iterate through and place everything in the world, then sync transforms and simulate
                 foreach (CollisionGroup group in Groups)
                 {
                     foreach (DPCObject body in group.Bodies)
@@ -225,7 +231,7 @@ namespace DoublePreciseCoords
 
         private void OnEnable()
         {
-            if(Exists() && singleton != this)
+            if(Exists() && Singleton != this)
             {
                 Debug.LogWarning("Multiple Wrapper Hubs exist!", this);
                 gameObject.SetActive(false);
@@ -233,7 +239,7 @@ namespace DoublePreciseCoords
             }
             else
             {
-                singleton = this;
+                Singleton = this;
                 Physics.autoSimulation = false;
                 Physics.autoSyncTransforms = false;
             }
@@ -241,9 +247,9 @@ namespace DoublePreciseCoords
 
         private void OnDisable()
         {
-            if(singleton == this)
+            if(Singleton == this)
             {
-                singleton = null;
+                Singleton = null;
                 AllBodies.Clear();
 
                 Physics.autoSimulation = true;

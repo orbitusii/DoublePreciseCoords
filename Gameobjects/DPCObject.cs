@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using DoublePreciseCoords.Cameras;
 
 namespace DoublePreciseCoords
 {
@@ -24,11 +25,13 @@ namespace DoublePreciseCoords
         public bool AutoRefreshBoundingRadius = true;
 
         public bool Interactable = true;
-        public bool Viewable = true;
+        public DPCViewType Viewability = Cameras.DPCViewType.Visible;
 
 #pragma warning disable CS0108
         public Rigidbody rigidbody { get; protected set; }
 #pragma warning restore
+
+        public DPCRenderer RenderController;
 
         public float Speed
         {
@@ -45,6 +48,19 @@ namespace DoublePreciseCoords
             transform.localScale = Vector3.one;
 
             LastRawPosition = transform.position;
+        }
+
+        public void SetViewPosition(Vector3 posInUnity, float scale, bool visible)
+        {
+            transform.position = posInUnity;
+            transform.localScale = Vector3.one * scale;
+
+            LastRawPosition = transform.position;
+
+            if(RenderController)
+            {
+                RenderController.SetVisibility(visible);
+            }
         }
 
         public void SyncPosition ()
