@@ -11,9 +11,8 @@ using UnityEngine;
 namespace DoublePreciseCoords
 {
     /// <summary>
-    /// An overarching class to handle Physics Wrapping and multi-floating-origin behavior.
-    /// If you need rigidbody behavior, use DynamicBody. If you need motion, but not physics,
-    /// use KinematicBody.
+    /// [DEPRECATED] Use DPCObject instead. -- An overarching class to handle Physics Wrapping and
+    /// multi-floating-origin behavior. If you need rigidbody behavior, use DynamicBody.
     /// </summary>
     public class WrappedBody : MonoBehaviour, ILargePosition
     {

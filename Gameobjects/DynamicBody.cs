@@ -9,6 +9,9 @@ Copyright: 2022
 using UnityEngine;
 namespace DoublePreciseCoords
 {
+    /// <summary>
+    /// [DEPRECATED] Use DPCObject instead.
+    /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class DynamicBody : WrappedBody, ILargePosition
     {
@@ -35,7 +38,7 @@ namespace DoublePreciseCoords
 
         protected virtual void FixedUpdate()
         {
-            if (!DoubleCoordinateWorld.Exists())
+            if (!DPCWorld.Exists())
             {
                 Debug.LogWarning("Wrapped Rigidbodies exist without a Wrapper Hub!");
                 enabled = false;

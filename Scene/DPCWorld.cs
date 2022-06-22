@@ -15,11 +15,11 @@ namespace DoublePreciseCoords
     /// <summary>
     /// Double-Precision Coordinate Field - the main component required in a scene to enable DCPS behavior.
     /// </summary>
-    public class DoubleCoordinateWorld : MonoBehaviour
+    public class DPCWorld : MonoBehaviour
     {
-        protected static DoubleCoordinateWorld singleton;
+        protected static DPCWorld singleton;
 
-        protected static List<DoubleCoordinateObject> AllBodies = new List<DoubleCoordinateObject>();
+        protected static List<DPCObject> AllBodies = new List<DPCObject>();
 
         [Tooltip("The absolute size of the physics area. Maximum positions are 1/2 of the size.")]
         public Vector2 PhysicsAreaSize = Vector2.one * 4000;
@@ -34,7 +34,7 @@ namespace DoublePreciseCoords
         {
             if(singleton == null)
             {
-                DoubleCoordinateWorld foundDCW = FindObjectOfType(typeof(DoubleCoordinateWorld)) as DoubleCoordinateWorld;
+                DPCWorld foundDCW = FindObjectOfType(typeof(DPCWorld)) as DPCWorld;
 
                 if (foundDCW == null)
                 {
@@ -53,10 +53,10 @@ namespace DoublePreciseCoords
             {
                 GameObject newWorld = new GameObject();
                 newWorld.name = "DoubleCoordinateWorld";
-                singleton = newWorld.AddComponent(typeof(DoubleCoordinateWorld)) as DoubleCoordinateWorld;
+                singleton = newWorld.AddComponent(typeof(DPCWorld)) as DPCWorld;
             }
         }
-        public static void Add(DoubleCoordinateObject body)
+        public static void Add(DPCObject body)
         {
             if (!AllBodies.Contains(body))
             {
@@ -64,7 +64,7 @@ namespace DoublePreciseCoords
             }
         }
 
-        public static void Remove(DoubleCoordinateObject body)
+        public static void Remove(DPCObject body)
         {
             AllBodies.Remove(body);
         }
@@ -77,7 +77,7 @@ namespace DoublePreciseCoords
                 from body in AllBodies
                 where body.Interactable == true
                 select body;
-            List<DoubleCoordinateObject> movingObjects = movingObjectsQuery.ToList();
+            List<DPCObject> movingObjects = movingObjectsQuery.ToList();
 
             // If we don't have any moving objects, don't bother continuing.
             if (movingObjects.Count() < 1) return;
@@ -101,10 +101,10 @@ namespace DoublePreciseCoords
                 // understanding of everyone's position.
                 foreach (CollisionGroup group in Groups)
                 {
-                    foreach (DoubleCoordinateObject body in group.Bodies)
+                    foreach (DPCObject body in group.Bodies)
                     {
                         Vector3 positionOffset = (Vector3)(body.Position - group.Start);
-                        body.SetPhysicsPosition(startCorner + positionOffset);
+                        body.SetRawPosition(startCorner + positionOffset);
                     }
 
                     startCorner.x += (float)group.Size.x + GroupSpacing;
@@ -173,10 +173,10 @@ namespace DoublePreciseCoords
             }
 
             List<CollisionGroup> finalGroups = new List<CollisionGroup>();
-            List<DoubleCoordinateObject> bodies = group.Bodies;
+            List<DPCObject> bodies = group.Bodies;
 
             // Sort by left-most bound on each object.
-            bodies.Sort(delegate (DoubleCoordinateObject left, DoubleCoordinateObject right)
+            bodies.Sort(delegate (DPCObject left, DPCObject right)
             {
                 double leftMin = left.Position[axis] - left.BoundingRadius;
                 double rightMin = right.Position[axis] - right.BoundingRadius;

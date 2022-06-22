@@ -8,6 +8,9 @@ Copyright: 2022
 
 namespace DoublePreciseCoords
 {
+    /// <summary>
+    /// [DEPRECATED] Use DPCObject instead.
+    /// </summary>
     public interface ILargePosition
     {
         Vector64 GetPosition();

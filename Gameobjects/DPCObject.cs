@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace DoublePreciseCoords
 {
-    public class DoubleCoordinateObject: MonoBehaviour
+    public class DPCObject: MonoBehaviour
     {
         [Tooltip("This object's position... but in a 64-bit Vector format. " +
             "With a WrapperHub in the scene, this lets objects use a much larger " +
             "coordinate system in a useful capacity.")]
         public Vector64 Position;
-        private Vector3 LastPhysicsPosition;
+        private Vector3 LastRawPosition;
 
         [Tooltip("The bounding radius of this object, used by the WrapperHub to " +
             "determine what WrappedBodies are actually interacting.")]
@@ -35,19 +35,22 @@ namespace DoublePreciseCoords
             get => rigidbody.velocity.magnitude;
         }
 
-        public void SetPhysicsPosition (Vector3 posInUnity)
+        /// <summary>
+        /// Sets this object's raw Unity position independent of updating its Double Position
+        /// </summary>
+        /// <param name="posInUnity"></param>
+        public void SetRawPosition (Vector3 posInUnity)
         {
             transform.position = posInUnity;
             transform.localScale = Vector3.one;
 
-            LastPhysicsPosition = transform.position;
+            LastRawPosition = transform.position;
         }
 
         public void SyncPosition ()
         {
-            Vector3 delta = transform.position - LastPhysicsPosition;
+            Vector3 delta = transform.position - LastRawPosition;
             MovePosition(delta);
-
         }
 
         public void MovePosition (Vector64 delta)
@@ -57,17 +60,17 @@ namespace DoublePreciseCoords
 
         protected void OnValidate ()
         {
-            if(DoubleCoordinateWorld.Exists())
+            if(DPCWorld.Exists())
             {
                 return;
             }
 
-            DoubleCoordinateWorld.Create();
+            DPCWorld.Create();
         }
 
         protected virtual void OnEnable ()
         {
-            DoubleCoordinateWorld.Add(this);
+            DPCWorld.Add(this);
 
             if(AutoRefreshBoundingRadius)
             {
@@ -76,7 +79,7 @@ namespace DoublePreciseCoords
                 BoundingRadius = bounds.extents.magnitude;
             }
 
-            LastPhysicsPosition = transform.position;
+            LastRawPosition = transform.position;
         }
 
         private Bounds GatherBounds()
@@ -95,7 +98,7 @@ namespace DoublePreciseCoords
 
         protected virtual void OnDisable ()
         {
-            DoubleCoordinateWorld.Remove(this);
+            DPCWorld.Remove(this);
         }
 
         protected virtual void OnDrawGizmos ()
