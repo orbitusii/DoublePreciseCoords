@@ -6,7 +6,7 @@ namespace DoublePreciseCoords
     public class CollisionGroup
     {
         // FIELDS
-        public List<WrappedBody> Bodies = new List<WrappedBody>();
+        public List<DoubleCoordinateObject> Bodies = new List<DoubleCoordinateObject>();
 
         public Vector64 Start;
         public Vector64 End;
@@ -42,9 +42,9 @@ namespace DoublePreciseCoords
             _cntr = Vector64.zero;
         }
 
-        public CollisionGroup(WrappedBody body)
+        public CollisionGroup(DoubleCoordinateObject body)
         {
-            Bodies = new List<WrappedBody> { body };
+            Bodies = new List<DoubleCoordinateObject> { body };
 
             Start = body.Position - Vector3.one * body.BoundingRadius;
             End = body.Position + Vector3.one * body.BoundingRadius;

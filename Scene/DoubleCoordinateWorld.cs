@@ -19,7 +19,7 @@ namespace DoublePreciseCoords
     {
         protected static DoubleCoordinateWorld singleton;
 
-        protected static List<WrappedBody> AllBodies = new List<WrappedBody>();
+        protected static List<DoubleCoordinateObject> AllBodies = new List<DoubleCoordinateObject>();
 
         [Tooltip("The absolute size of the physics area. Maximum positions are 1/2 of the size.")]
         public Vector2 PhysicsAreaSize = Vector2.one * 4000;
@@ -30,6 +30,45 @@ namespace DoublePreciseCoords
         [field: SerializeField]
         public bool WrapSpace { get; protected set; } = true;
 
+        public static bool Exists ()
+        {
+            if(singleton == null)
+            {
+                DoubleCoordinateWorld foundDCW = FindObjectOfType(typeof(DoubleCoordinateWorld)) as DoubleCoordinateWorld;
+
+                if (foundDCW == null)
+                {
+                    return false;
+                }
+                
+                singleton = foundDCW;
+            }
+
+            return true;
+        }
+
+        public static void Create ()
+        {
+            if (!Exists())
+            {
+                GameObject newWorld = new GameObject();
+                newWorld.name = "DoubleCoordinateWorld";
+                singleton = newWorld.AddComponent(typeof(DoubleCoordinateWorld)) as DoubleCoordinateWorld;
+            }
+        }
+        public static void Add(DoubleCoordinateObject body)
+        {
+            if (!AllBodies.Contains(body))
+            {
+                AllBodies.Add(body);
+            }
+        }
+
+        public static void Remove(DoubleCoordinateObject body)
+        {
+            AllBodies.Remove(body);
+        }
+
         protected virtual void FixedUpdate()
         {
             dt = Time.fixedDeltaTime;
@@ -38,7 +77,7 @@ namespace DoublePreciseCoords
                 from body in AllBodies
                 where body.Interactable == true
                 select body;
-            List<WrappedBody> movingObjects = movingObjectsQuery.ToList();
+            List<DoubleCoordinateObject> movingObjects = movingObjectsQuery.ToList();
 
             // If we don't have any moving objects, don't bother continuing.
             if (movingObjects.Count() < 1) return;
@@ -62,10 +101,10 @@ namespace DoublePreciseCoords
                 // understanding of everyone's position.
                 foreach (CollisionGroup group in Groups)
                 {
-                    foreach (WrappedBody body in group.Bodies)
+                    foreach (DoubleCoordinateObject body in group.Bodies)
                     {
                         Vector3 positionOffset = (Vector3)(body.Position - group.Start);
-                        body.PlaceAt(startCorner + positionOffset);
+                        body.SetPhysicsPosition(startCorner + positionOffset);
                     }
 
                     startCorner.x += (float)group.Size.x + GroupSpacing;
@@ -86,7 +125,6 @@ namespace DoublePreciseCoords
                 }
 
                 Physics.SyncTransforms();
-
                 Physics.Simulate(dt);
 
                 foreach (var body in movingObjects)
@@ -135,10 +173,10 @@ namespace DoublePreciseCoords
             }
 
             List<CollisionGroup> finalGroups = new List<CollisionGroup>();
-            List<WrappedBody> bodies = group.Bodies;
+            List<DoubleCoordinateObject> bodies = group.Bodies;
 
             // Sort by left-most bound on each object.
-            bodies.Sort(delegate (WrappedBody left, WrappedBody right)
+            bodies.Sort(delegate (DoubleCoordinateObject left, DoubleCoordinateObject right)
             {
                 double leftMin = left.Position[axis] - left.BoundingRadius;
                 double rightMin = right.Position[axis] - right.BoundingRadius;
@@ -187,7 +225,7 @@ namespace DoublePreciseCoords
 
         private void OnEnable()
         {
-            if(Exists())
+            if(Exists() && singleton != this)
             {
                 Debug.LogWarning("Multiple Wrapper Hubs exist!", this);
                 gameObject.SetActive(false);
@@ -211,24 +249,6 @@ namespace DoublePreciseCoords
                 Physics.autoSimulation = true;
                 Physics.autoSyncTransforms = true;
             }
-        }
-
-        public static void Add (WrappedBody body)
-        {
-            if(!AllBodies.Contains(body))
-            {
-                AllBodies.Add(body);
-            }
-        }
-
-        public static void Remove (WrappedBody body)
-        {
-            AllBodies.Remove(body);
-        }
-
-        public static bool Exists ()
-        {
-            return !(singleton == null);
         }
     }
 }

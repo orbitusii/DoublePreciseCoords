@@ -8,7 +8,7 @@ Copyright: 2022
 
 using UnityEngine;
 
-namespace DoublePreciseCoords.Camera
+namespace DoublePreciseCoords.Cameras
 {
     [CreateAssetMenu()]
     public class ViewCondenserSettings : ScriptableObject

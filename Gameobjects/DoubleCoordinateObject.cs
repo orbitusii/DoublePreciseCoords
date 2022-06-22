@@ -1,30 +1,22 @@
-/*
-
-CVW-5 Prototype 2: Basic Wrapped Body
-Author: Dan Lodholm (github: orbitusii)
-Copyright: 2022
-
-*/
-
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace DoublePreciseCoords
 {
-    /// <summary>
-    /// An overarching class to handle Physics Wrapping and multi-floating-origin behavior.
-    /// If you need rigidbody behavior, use DynamicBody. If you need motion, but not physics,
-    /// use KinematicBody.
-    /// </summary>
-    public class WrappedBody : MonoBehaviour, ILargePosition
+    public class DoubleCoordinateObject: MonoBehaviour
     {
-        [Tooltip("This rigidbody's position... but in a 64-bit Vector format. " +
+        [Tooltip("This object's position... but in a 64-bit Vector format. " +
             "With a WrapperHub in the scene, this lets objects use a much larger " +
             "coordinate system in a useful capacity.")]
         public Vector64 Position;
+        private Vector3 LastPhysicsPosition;
 
         [Tooltip("The bounding radius of this object, used by the WrapperHub to " +
             "determine what WrappedBodies are actually interacting.")]
         public float BoundingRadius = 1;
+
         [Tooltip("Whether or not this body will refresh its bounding radius during " +
             "OnEnable(). Set this to false if you need the BoundingRadius to be different " +
             "than what this object's colliders indicate it should be (e.g. missiles with " +
@@ -32,38 +24,59 @@ namespace DoublePreciseCoords
         public bool AutoRefreshBoundingRadius = true;
 
         public bool Interactable = true;
+        public bool Viewable = true;
 
-        public Vector64 GetPosition()
+#pragma warning disable CS0108
+        public Rigidbody rigidbody { get; protected set; }
+#pragma warning restore
+
+        public float Speed
         {
-            return Position;
+            get => rigidbody.velocity.magnitude;
         }
 
-        /// <summary>
-        /// Place this object into the world using Unity's coordinates.
-        /// This does not affect the object's real position, only where it is located for
-        /// handling interactions using Unity's physics system.
-        /// </summary>
-        /// <param name="PositionInUnity"></param>
-        public virtual void PlaceAt(Vector3 PositionInUnity)
+        public void SetPhysicsPosition (Vector3 posInUnity)
         {
-            transform.position = PositionInUnity;
+            transform.position = posInUnity;
             transform.localScale = Vector3.one;
-        }
-        public virtual void SyncPosition()
-        {
-            // DO NOTHING UNLESS OVERRIDDEN
+
+            LastPhysicsPosition = transform.position;
         }
 
-        protected virtual void OnEnable()
+        public void SyncPosition ()
         {
-            //DoubleCoordinateWorld.Add(this);
+            Vector3 delta = transform.position - LastPhysicsPosition;
+            MovePosition(delta);
 
-            if (AutoRefreshBoundingRadius)
+        }
+
+        public void MovePosition (Vector64 delta)
+        {
+            Position += delta;
+        }
+
+        protected void OnValidate ()
+        {
+            if(DoubleCoordinateWorld.Exists())
+            {
+                return;
+            }
+
+            DoubleCoordinateWorld.Create();
+        }
+
+        protected virtual void OnEnable ()
+        {
+            DoubleCoordinateWorld.Add(this);
+
+            if(AutoRefreshBoundingRadius)
             {
                 Bounds bounds = GatherBounds();
 
                 BoundingRadius = bounds.extents.magnitude;
             }
+
+            LastPhysicsPosition = transform.position;
         }
 
         private Bounds GatherBounds()
@@ -80,21 +93,16 @@ namespace DoublePreciseCoords
             return newBounds;
         }
 
-        protected virtual void OnDisable()
+        protected virtual void OnDisable ()
         {
-            //DoubleCoordinateWorld.Remove(this);
+            DoubleCoordinateWorld.Remove(this);
         }
 
-        protected virtual void OnDrawGizmos()
+        protected virtual void OnDrawGizmos ()
         {
-            Gizmos.color = Interactable ? Color.red : Color.gray;
+            Gizmos.color = Interactable ? Color.green : Color.gray;
 
             Gizmos.DrawWireSphere(transform.position, BoundingRadius);
-        }
-
-        void ILargePosition.MovePosition(Vector64 delta)
-        {
-            Position += delta;
         }
     }
 }

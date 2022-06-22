@@ -10,8 +10,8 @@ namespace DoublePreciseCoords
 {
     public interface ILargePosition
     {
-        public Vector64 GetPosition();
+        Vector64 GetPosition();
 
-        public void MovePosition(Vector64 delta);
+        void MovePosition(Vector64 delta);
     }
 }
