@@ -6,6 +6,7 @@ using DoublePreciseCoords.Cameras;
 
 namespace DoublePreciseCoords
 {
+    [DefaultExecutionOrder(100)]
     public class DPCObject: MonoBehaviour
     {
         [Tooltip("This object's position... but in a 64-bit Vector format. " +
@@ -73,6 +74,11 @@ namespace DoublePreciseCoords
         {
             Position += delta;
         }
+
+        /// <summary>
+        /// Use this method to implement specialized kinematic behavior
+        /// </summary>
+        public virtual void OnCustomPhysics (bool hasNeighbors) { }
 
         protected void OnValidate ()
         {
