@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Cameras\Editor\**" />
+    <EmbeddedResource Remove="Cameras\Editor\**" />
+    <None Remove="Cameras\Editor\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="UnityEditor">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.18f1\Editor\Data\Managed\UnityEditor.dll</HintPath>
     </Reference>
@@ -24,10 +30,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Cameras\Editor\" />
   </ItemGroup>
 
 </Project>

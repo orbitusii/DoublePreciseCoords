@@ -5,5 +5,11 @@
     <Compile Update="Cameras\DPCRenderer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Gameobjects\DPCProjectile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Gameobjects\DPCProjectileData.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

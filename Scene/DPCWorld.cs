@@ -15,6 +15,7 @@ namespace DoublePreciseCoords
     /// <summary>
     /// Double-Precision Coordinate Field - the main component required in a scene to enable DCPS behavior.
     /// </summary>
+    [DefaultExecutionOrder(200)]
     public class DPCWorld : MonoBehaviour
     {
         public static DPCWorld Singleton { get; protected set; }
@@ -65,7 +66,10 @@ namespace DoublePreciseCoords
             {
                 AllBodies.Add(body);
 
-                OnBodiesChanged.Invoke();
+                if(OnBodiesChanged.GetInvocationList().Length > 0)
+                {
+                    OnBodiesChanged.Invoke();
+                }
             }
         }
 
@@ -73,7 +77,10 @@ namespace DoublePreciseCoords
         {
             AllBodies.Remove(body);
 
-            OnBodiesChanged.Invoke();
+            if (OnBodiesChanged.GetInvocationList().Length > 0)
+            {
+                OnBodiesChanged.Invoke();
+            }
         }
 
         protected virtual void FixedUpdate()
@@ -107,10 +114,20 @@ namespace DoublePreciseCoords
                 // Iterate through and place everything in the world, then sync transforms and simulate
                 foreach (CollisionGroup group in Groups)
                 {
+                    bool hasNeighbors = group.Bodies.Count > 1;
+
+                    // Place objects in the world
                     foreach (DPCObject body in group.Bodies)
                     {
                         Vector3 positionOffset = (Vector3)(body.Position - group.Start);
                         body.SetRawPosition(startCorner + positionOffset);
+                    }
+
+                    // After every object in a group has been placed down, then we can do custom
+                    // physics things (projectiles do their raycasting here)
+                    foreach (DPCObject body in group.Bodies)
+                    {
+                        body.OnCustomPhysics(hasNeighbors);
                     }
 
                     startCorner.x += (float)group.Size.x + GroupSpacing;
@@ -140,6 +157,11 @@ namespace DoublePreciseCoords
             }
             else
             {
+                foreach(var body in AllBodies)
+                {
+                    body.OnCustomPhysics(true);
+                }
+
                 Physics.SyncTransforms();
                 Physics.Simulate(dt);
 
