@@ -12,14 +12,14 @@ namespace DoublePreciseCoords
         public Vector3 Velocity { get; protected set; }
         protected RaycastHit HitData;
 
-        protected float RemainingLifetime = 0;
-        protected float ArmingDelay = 0;
+        protected float EndOfLife = 0;
+        protected float ArmedTime = 0;
 
         // Use this for initialization
         public void Initialize(Vector3 direction)
         {
-            RemainingLifetime = Data.Lifetime;
-            ArmingDelay = Data.ArmingDelay;
+            EndOfLife = Time.time + Data.Lifetime;
+            ArmedTime = Time.time + Data.ArmingDelay;
 
             BoundingRadius = Data.DamageRadius > 0 ? BoundingRadius : Data.DamageRadius;
 
@@ -39,14 +39,13 @@ namespace DoublePreciseCoords
             if (Interactable)
             {
 
-                if (Data.Lifetime > 0 && RemainingLifetime <= 0)
+                if (Data.Lifetime > 0 && Time.time >= EndOfLife)
                 {
                     Detonate(null);
+                    return;
                 }
 
                 float dt = Time.fixedDeltaTime;
-                RemainingLifetime -= dt;
-                ArmingDelay -= dt;
 
                 Vector3 accel = transform.forward * (Data.Acceleration - (Velocity.sqrMagnitude * Data.Drag));
                 Vector3 gravity = Physics.gravity * Data.Gravity;
@@ -54,15 +53,23 @@ namespace DoublePreciseCoords
 
                 Velocity += (accel + gravity + steering) * dt;
 
-                if (hasNeighbors && ArmingDelay <= 0)
+                Vector3 lastPos = transform.position;
+                transform.position += Velocity * dt;
+                transform.forward = Velocity.normalized;
+
+                if (Time.time < ArmedTime)
                 {
-                    Vector3 start = transform.position;
+                    return;
+                }
+
+                if (hasNeighbors)
+                {
                     bool didHit;
 
                     if (Data.ProjectileRadius == 0)
                     {
                         didHit = Physics.Raycast(
-                            start,
+                            lastPos,
                             Velocity.normalized,
                             out HitData,
                             Velocity.magnitude * dt);
@@ -70,7 +77,7 @@ namespace DoublePreciseCoords
                     else
                     {
                         didHit = Physics.SphereCast(
-                               start,
+                               lastPos,
                                Data.ProjectileRadius,
                                Velocity.normalized,
                                out HitData,
@@ -83,9 +90,6 @@ namespace DoublePreciseCoords
                     }
                 }
 
-                transform.position += Velocity * dt / 2;
-                transform.forward = Velocity.normalized;
-
                 SteeringInput = Vector2.zero;
             }
         }
@@ -93,6 +97,9 @@ namespace DoublePreciseCoords
         public void Detonate (Collider hitObject)
         {
             Interactable = false;
+            Velocity = Vector3.zero;
+
+            Debug.Log($"Projectile {name} has detonated on object {hitObject}");
 
             // Spawn effects
 
