@@ -65,11 +65,8 @@ namespace DoublePreciseCoords
             if (!AllBodies.Contains(body))
             {
                 AllBodies.Add(body);
-
-                if(OnBodiesChanged.GetInvocationList().Length > 0)
-                {
-                    OnBodiesChanged.Invoke();
-                }
+                
+                //OnBodiesChanged();
             }
         }
 
@@ -77,10 +74,7 @@ namespace DoublePreciseCoords
         {
             AllBodies.Remove(body);
 
-            if (OnBodiesChanged.GetInvocationList().Length > 0)
-            {
-                OnBodiesChanged.Invoke();
-            }
+            //OnBodiesChanged();
         }
 
         protected virtual void FixedUpdate()

@@ -9,65 +9,57 @@ namespace DoublePreciseCoords.Cameras
     {
         public DPCViewSettings Settings;
 
-        private List<DPCObject> ViewCache;
+        private List<DPCObject> ViewCache
+        {
+            get
+            {
+                return DPCWorld.AllBodies.FindAll(x => x.Viewability.HasFlag(DPCViewType.Visible));
+            }
+        }
 
         public DPCObject ViewTarget;
-        private int ViewTargetIndex;
+
+        public int PlayerSeat = 0;
 
         public Vector2 ViewAngle = Vector2.zero;
         public float ViewDistance;
+
+        public Vector3 subOffset;
+        public bool HasFirstPerson;
+
+        public ViewModes ViewMode = ViewModes.ThirdPersonFree;
+        public enum ViewModes
+        {
+            ThirdPersonFree,
+            ThirdPersonFollow,
+            FirstPerson,
+        }
 
         public Vector64 CameraPosition = Vector64.zero;
 
         private void OnEnable ()
         {
-            if(DPCWorld.Exists())
+            if(!DPCWorld.Exists())
             {
-                DPCWorld.OnBodiesChanged += OnBodiesChanged;
-                UpdateViewCache();
 
-                return;
+                Debug.LogWarning("A DPCCamera component exists in a scene with no DPCWorld.", this);
+                enabled = false;
             }
-
-            Debug.LogWarning("A DPCCamera component exists in a scene with no DPCWorld.", this);
-            enabled = false;
         }
 
-        private void OnDisable ()
-        {
-            DPCWorld.OnBodiesChanged -= OnBodiesChanged;
-        }
-
-        public void OnBodiesChanged ()
-        {
-            UpdateViewCache();
-        }
-
-        protected void UpdateViewCache ()
-        {
-            ViewCache = DPCWorld.AllBodies.FindAll(x => x.Interactable && x.Viewability.HasFlag(DPCViewType.Visible));
-        }
-
-        public void StepViewTarget (int steps)
-        {
-            ViewTargetIndex += steps;
-            ViewTargetIndex %= ViewCache.Count;
-
-            ViewTarget = ViewCache[ViewTargetIndex];
-        }
-
-        public void SetViewTarget (int target)
-        {
-            ViewTargetIndex = target;
-            ViewTargetIndex %= ViewCache.Count;
-
-            ViewTarget = ViewCache[ViewTargetIndex];
-        }
-
-        public void ForceViewTarget (DPCObject target)
+        private void UpdateViewTarget (DPCObject target)
         {
             ViewTarget = target;
-            ViewTargetIndex = -1;
+            HasFirstPerson = false;
+            subOffset = Vector3.zero;
+
+            IFirstPersonView fpvComponent = target.GetComponent(typeof(IFirstPersonView)) as IFirstPersonView;
+
+            if(fpvComponent != null)
+            {
+                HasFirstPerson = true;
+                subOffset = fpvComponent[PlayerSeat];
+            }
         }
 
         public bool CheckIndex (int index)
@@ -89,12 +81,44 @@ namespace DoublePreciseCoords.Cameras
             transform.position = Vector3.zero;
 
             ViewAngle = clampAngle(ViewAngle);
-            transform.eulerAngles = ViewAngle;
 
             if(ViewTarget)
             {
-                Vector3 trueOffset = ViewDistance * transform.forward;
-                CameraPosition = ViewTarget.Position - trueOffset;
+                Quaternion trueAngle;
+                Matrix4x4 rotateMate;
+                Vector3 trueOffset;
+
+                switch (ViewMode)
+                {
+                    case ViewModes.FirstPerson:
+                        if(HasFirstPerson)
+                        {
+                            trueOffset = ViewTarget.transform.TransformVector(subOffset);
+
+                            trueAngle = FixAngleToTarget(ViewAngle);
+                            break;
+                        }
+
+                        trueAngle = FixAngleToTarget(ViewAngle);
+                        rotateMate = Matrix4x4.Rotate(trueAngle);
+
+                        trueOffset = rotateMate * Vector3.back * ViewDistance;
+                        break;
+                    case ViewModes.ThirdPersonFollow:
+                        trueAngle = FixAngleToTarget(ViewAngle);
+                        rotateMate = Matrix4x4.Rotate(trueAngle);
+
+                        trueOffset = rotateMate * Vector3.back * ViewDistance;
+                        break;
+                    default:
+                        trueAngle = Quaternion.Euler(ViewAngle);
+                        rotateMate = Matrix4x4.Rotate(trueAngle);
+
+                        trueOffset = rotateMate * Vector3.back * ViewDistance;
+                        break;
+                }
+
+                AlignViewAndPosition(trueOffset, trueAngle);
             }
         }
 
@@ -111,13 +135,35 @@ namespace DoublePreciseCoords.Cameras
             return new Vector2(clampX, clampY);
         }
 
+        private Quaternion FixAngleToTarget (Vector3 euler)
+        {
+            Quaternion desired = Quaternion.Euler(euler);
+            Quaternion target = ViewTarget.transform.rotation;
+
+            return target * desired;
+        }
+
+        private void AlignViewAndPosition (Vector3 offset, Quaternion rotation)
+        {
+            transform.rotation = rotation;
+            CameraPosition = ViewTarget.Position + offset;
+
+            if (!DPCWorld.Singleton.WrapSpace)
+            {
+                transform.position = (Vector3)CameraPosition;
+            }
+        }
+
         // We position objects here because of the reversed camera-object hierarchy.
         // Camera is stationary, objects move relative to it.
         public void LateUpdate ()
         {
-            foreach (DPCObject obj in ViewCache)
+            if(DPCWorld.Singleton.WrapSpace)
             {
-                ScaleObjectToView(obj);
+                foreach (DPCObject obj in ViewCache)
+                {
+                    ScaleObjectToView(obj);
+                }
             }
         }
 

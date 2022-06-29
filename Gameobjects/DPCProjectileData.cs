@@ -6,7 +6,8 @@ namespace DoublePreciseCoords
     [CreateAssetMenu]
     public class DPCProjectileData : ScriptableObject
     {
-        public Transform VisualPrefab;
+        public GameObject VisualPrefab;
+        public GameObject EffectsPrefab;
 
         [Min(0)]
         public float ProjectileRadius = 0f;

@@ -4,7 +4,7 @@ using DoublePreciseCoords.Cameras;
 
 namespace DoublePreciseCoords.Editor
 {
-    [CustomEditor(typeof(DPCCamera))]
+    //[CustomEditor(typeof(DPCCamera))]
     public class DPCCameraEditor : UnityEditor.Editor
     {
         protected DPCCamera cam;
