@@ -21,11 +21,11 @@ namespace DoublePreciseCoords.Editor
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Prev Target"))
             {
-                cam.StepViewTarget(-1);
+                //cam.StepViewTarget(-1);
             }
             if (GUILayout.Button("Next Target"))
             {
-                cam.StepViewTarget(1);
+                //cam.StepViewTarget(1);
             }
             EditorGUILayout.EndHorizontal();
         }
