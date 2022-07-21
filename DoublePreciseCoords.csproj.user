@@ -2,9 +2,6 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
-    <Compile Update="Cameras\IFirstPersonView.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Cameras\DPCRenderer.cs">
       <SubType>Code</SubType>
     </Compile>

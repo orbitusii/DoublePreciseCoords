@@ -6,6 +6,7 @@ namespace DoublePreciseCoords
     [DefaultExecutionOrder(101)]
     public class DPCProjectile : DPCObject, IHasProjectileData
     {
+        public DPCOwnerInfo Owner = default;
         public DPCProjectileData Data;
         public Vector2 SteeringInput;
 
@@ -126,12 +127,13 @@ namespace DoublePreciseCoords
 
                 foreach(Collider singleHit in hitByBlast)
                 {
-                    singleHit.PushDamage(Data.Damage);
+                    singleHit.PushDamage(Data.Damage, Owner);
                 }
             }
             else if (hitObject)
             {
-                hitObject.PushDamage(Data.Damage);
+                Debug.Log($"Hit something, my owner is {Owner.OwnerName}");
+                hitObject.PushDamage(Data.Damage, Owner);
             }
 
         }

@@ -164,6 +164,18 @@ namespace DoublePreciseCoords
                     body.Position = body.transform.position;
                 }
             }
+
+            for (int i = 0; i < AllBodies.Count; i++)
+            {
+                var body = AllBodies[i];
+
+                if ((body as DPCProjectile)?.ShouldDestroy == true)
+                {
+                    Destroy(body.gameObject);
+                }
+            }
+
+            AllBodies.RemoveAll(x => x == null);
         }
 
         protected void Update()
