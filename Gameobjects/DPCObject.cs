@@ -82,16 +82,21 @@ namespace DoublePreciseCoords
 
         protected void OnValidate ()
         {
-            if(DPCWorld.Exists())
+            /*if(DPCWorld.Exists())
             {
                 return;
             }
 
-            DPCWorld.Create();
+            DPCWorld.Create();*/
         }
 
         protected virtual void OnEnable ()
         {
+            if (!DPCWorld.Exists())
+            {
+                DPCWorld.Create();
+            }
+
             DPCWorld.Add(this);
 
             if(AutoRefreshBoundingRadius)

@@ -9,14 +9,18 @@
 
   <ItemGroup>
     <Compile Remove="Cameras\Editor\**" />
+    <Compile Remove="Deprecated\**" />
     <EmbeddedResource Remove="Cameras\Editor\**" />
+    <EmbeddedResource Remove="Deprecated\**" />
     <None Remove="Cameras\Editor\**" />
+    <None Remove="Deprecated\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="UnityEditor">
-      <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.18f1\Editor\Data\Managed\UnityEditor.dll</HintPath>
-    </Reference>
+    <Compile Remove="Cameras\IFirstPersonView.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.18f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>

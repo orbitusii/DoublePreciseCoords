@@ -8,116 +8,33 @@ namespace DoublePreciseCoords.Cameras
     public class DPCCamera: MonoBehaviour
     {
         public DPCViewSettings Settings;
-
-        private List<DPCObject> ViewCache;
-
-        public DPCObject ViewTarget;
-        private int ViewTargetIndex;
-
-        public Vector2 ViewAngle = Vector2.zero;
-        public float ViewDistance;
-
         public Vector64 CameraPosition = Vector64.zero;
 
         private void OnEnable ()
         {
-            if(DPCWorld.Exists())
+            if(!DPCWorld.Exists())
             {
-                DPCWorld.OnBodiesChanged += OnBodiesChanged;
-                UpdateViewCache();
 
-                return;
+                Debug.LogWarning("A DPCCamera component exists in a scene with no DPCWorld.", this);
+                enabled = false;
             }
-
-            Debug.LogWarning("A DPCCamera component exists in a scene with no DPCWorld.", this);
-            enabled = false;
-        }
-
-        private void OnDisable ()
-        {
-            DPCWorld.OnBodiesChanged -= OnBodiesChanged;
-        }
-
-        public void OnBodiesChanged ()
-        {
-            UpdateViewCache();
-        }
-
-        protected void UpdateViewCache ()
-        {
-            ViewCache = DPCWorld.AllBodies.FindAll(x => x.Interactable && x.Viewability.HasFlag(DPCViewType.Visible));
-        }
-
-        public void StepViewTarget (int steps)
-        {
-            ViewTargetIndex += steps;
-            ViewTargetIndex %= ViewCache.Count;
-
-            ViewTarget = ViewCache[ViewTargetIndex];
-        }
-
-        public void SetViewTarget (int target)
-        {
-            ViewTargetIndex = target;
-            ViewTargetIndex %= ViewCache.Count;
-
-            ViewTarget = ViewCache[ViewTargetIndex];
-        }
-
-        public void ForceViewTarget (DPCObject target)
-        {
-            ViewTarget = target;
-            ViewTargetIndex = -1;
-        }
-
-        public bool CheckIndex (int index)
-        {
-            return false;
-        }
-
-        public void SetAbsoluteOffset(Vector3 vector)
-        {
-            transform.position = Vector3.zero;
-            transform.LookAt(-vector);
-
-            ViewDistance = vector.magnitude;
-            ViewAngle = transform.eulerAngles;
         }
 
         public void Update ()
         {
             transform.position = Vector3.zero;
-
-            ViewAngle = clampAngle(ViewAngle);
-            transform.eulerAngles = ViewAngle;
-
-            if(ViewTarget)
-            {
-                Vector3 trueOffset = ViewDistance * transform.forward;
-                CameraPosition = ViewTarget.Position - trueOffset;
-            }
-        }
-
-        private Vector2 clampAngle(Vector2 angle)
-        {
-            // Y is yaw around the object, we need a range from -180 to +180
-            float clampY = angle.y > 180 ? angle.y - 360 : angle.y;
-
-            // X is pitch around the object, we need a range from -90 to +90
-            float clampX = angle.x;
-            if (clampX > 90) clampX = 90;
-            else if (clampX < -90) clampX = -90;
-
-            return new Vector2(clampX, clampY);
         }
 
         // We position objects here because of the reversed camera-object hierarchy.
         // Camera is stationary, objects move relative to it.
         public void LateUpdate ()
         {
-            foreach (DPCObject obj in ViewCache)
+            if(DPCWorld.Singleton.WrapSpace)
             {
-                ScaleObjectToView(obj);
+                foreach (DPCObject obj in DPCWorld.AllBodies)
+                {
+                    ScaleObjectToView(obj);
+                }
             }
         }
 

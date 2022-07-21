@@ -6,8 +6,8 @@ namespace DoublePreciseCoords
     {
         int Health { get; set; }
 
-        bool DoDamage(int dmg);
+        bool DoDamage(int dmg, DPCOwnerInfo owner = default);
 
-        void OnDeath();
+        void OnDeath(DPCOwnerInfo owner = default);
     }
 }

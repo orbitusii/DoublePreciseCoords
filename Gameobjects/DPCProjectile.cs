@@ -4,8 +4,9 @@ using UnityEngine;
 namespace DoublePreciseCoords
 {
     [DefaultExecutionOrder(101)]
-    public class DPCProjectile : DPCObject
+    public class DPCProjectile : DPCObject, IHasProjectileData
     {
+        public DPCOwnerInfo Owner = default;
         public DPCProjectileData Data;
         public Vector2 SteeringInput;
 
@@ -15,15 +16,27 @@ namespace DoublePreciseCoords
         protected float EndOfLife = 0;
         protected float ArmedTime = 0;
 
+        protected ParticleSystem particles;
+
+        public bool ShouldDestroy = false;
+
+        public DPCProjectileData GetData ()
+        {
+            return Data;
+        }
+
         // Use this for initialization
         public void Initialize(Vector3 direction)
         {
             EndOfLife = Time.time + Data.Lifetime;
             ArmedTime = Time.time + Data.ArmingDelay;
 
-            BoundingRadius = Data.DamageRadius > 0 ? BoundingRadius : Data.DamageRadius;
+            BoundingRadius = Data.DamageRadius > BoundingRadius ? Data.DamageRadius : BoundingRadius;
 
             Velocity = direction.normalized * (direction.magnitude + Data.LaunchSpeed);
+
+            GameObject effects = Instantiate(Data.EffectsPrefab, transform, false);
+            particles = effects.GetComponent(typeof(ParticleSystem)) as ParticleSystem;
         }
 
         public void PushSteeringCommand (Vector2 inputVec)
@@ -39,7 +52,7 @@ namespace DoublePreciseCoords
             if (Interactable)
             {
 
-                if (Data.Lifetime > 0 && Time.time >= EndOfLife)
+                if (Position.y <= 0 || Data.Lifetime > 0 && Time.time >= EndOfLife)
                 {
                     Detonate(null);
                     return;
@@ -96,12 +109,12 @@ namespace DoublePreciseCoords
 
         public void Detonate (Collider hitObject)
         {
+            SyncPosition();
             Interactable = false;
             Velocity = Vector3.zero;
+            particles.Play(true);
 
             Debug.Log($"Projectile {name} has detonated on object {hitObject}");
-
-            // Spawn effects
 
             if(hitObject == null)
             {
@@ -114,12 +127,13 @@ namespace DoublePreciseCoords
 
                 foreach(Collider singleHit in hitByBlast)
                 {
-                    singleHit.PushDamage(Data.Damage);
+                    singleHit.PushDamage(Data.Damage, Owner);
                 }
             }
             else if (hitObject)
             {
-                hitObject.PushDamage(Data.Damage);
+                Debug.Log($"Hit something, my owner is {Owner.OwnerName}");
+                hitObject.PushDamage(Data.Damage, Owner);
             }
 
         }

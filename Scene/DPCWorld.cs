@@ -65,11 +65,8 @@ namespace DoublePreciseCoords
             if (!AllBodies.Contains(body))
             {
                 AllBodies.Add(body);
-
-                if(OnBodiesChanged.GetInvocationList().Length > 0)
-                {
-                    OnBodiesChanged.Invoke();
-                }
+                
+                //OnBodiesChanged();
             }
         }
 
@@ -77,10 +74,7 @@ namespace DoublePreciseCoords
         {
             AllBodies.Remove(body);
 
-            if (OnBodiesChanged.GetInvocationList().Length > 0)
-            {
-                OnBodiesChanged.Invoke();
-            }
+            //OnBodiesChanged();
         }
 
         protected virtual void FixedUpdate()
@@ -170,6 +164,18 @@ namespace DoublePreciseCoords
                     body.Position = body.transform.position;
                 }
             }
+
+            for (int i = 0; i < AllBodies.Count; i++)
+            {
+                var body = AllBodies[i];
+
+                if ((body as DPCProjectile)?.ShouldDestroy == true)
+                {
+                    Destroy(body.gameObject);
+                }
+            }
+
+            AllBodies.RemoveAll(x => x == null);
         }
 
         protected void Update()
