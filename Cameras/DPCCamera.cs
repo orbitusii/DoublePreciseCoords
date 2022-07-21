@@ -8,33 +8,6 @@ namespace DoublePreciseCoords.Cameras
     public class DPCCamera: MonoBehaviour
     {
         public DPCViewSettings Settings;
-
-        private List<DPCObject> ViewCache
-        {
-            get
-            {
-                return DPCWorld.AllBodies.FindAll(x => x.Viewability.HasFlag(DPCViewType.Visible));
-            }
-        }
-
-        public DPCObject ViewTarget;
-
-        public int PlayerSeat = 0;
-
-        public Vector2 ViewAngle = Vector2.zero;
-        public float ViewDistance;
-
-        public Vector3 subOffset;
-        public bool HasFirstPerson;
-
-        public ViewModes ViewMode = ViewModes.ThirdPersonFree;
-        public enum ViewModes
-        {
-            ThirdPersonFree,
-            ThirdPersonFollow,
-            FirstPerson,
-        }
-
         public Vector64 CameraPosition = Vector64.zero;
 
         private void OnEnable ()
@@ -47,111 +20,9 @@ namespace DoublePreciseCoords.Cameras
             }
         }
 
-        private void UpdateViewTarget (DPCObject target)
-        {
-            ViewTarget = target;
-            HasFirstPerson = false;
-            subOffset = Vector3.zero;
-
-            IFirstPersonView fpvComponent = target.GetComponent(typeof(IFirstPersonView)) as IFirstPersonView;
-
-            if(fpvComponent != null)
-            {
-                HasFirstPerson = true;
-                subOffset = fpvComponent[PlayerSeat];
-            }
-        }
-
-        public bool CheckIndex (int index)
-        {
-            return false;
-        }
-
-        public void SetAbsoluteOffset(Vector3 vector)
-        {
-            transform.position = Vector3.zero;
-            transform.LookAt(-vector);
-
-            ViewDistance = vector.magnitude;
-            ViewAngle = transform.eulerAngles;
-        }
-
         public void Update ()
         {
             transform.position = Vector3.zero;
-
-            ViewAngle = clampAngle(ViewAngle);
-
-            if(ViewTarget)
-            {
-                Quaternion trueAngle;
-                Matrix4x4 rotateMate;
-                Vector3 trueOffset;
-
-                switch (ViewMode)
-                {
-                    case ViewModes.FirstPerson:
-                        if(HasFirstPerson)
-                        {
-                            trueOffset = ViewTarget.transform.TransformVector(subOffset);
-
-                            trueAngle = FixAngleToTarget(ViewAngle);
-                            break;
-                        }
-
-                        trueAngle = FixAngleToTarget(ViewAngle);
-                        rotateMate = Matrix4x4.Rotate(trueAngle);
-
-                        trueOffset = rotateMate * Vector3.back * ViewDistance;
-                        break;
-                    case ViewModes.ThirdPersonFollow:
-                        trueAngle = FixAngleToTarget(ViewAngle);
-                        rotateMate = Matrix4x4.Rotate(trueAngle);
-
-                        trueOffset = rotateMate * Vector3.back * ViewDistance;
-                        break;
-                    default:
-                        trueAngle = Quaternion.Euler(ViewAngle);
-                        rotateMate = Matrix4x4.Rotate(trueAngle);
-
-                        trueOffset = rotateMate * Vector3.back * ViewDistance;
-                        break;
-                }
-
-                AlignViewAndPosition(trueOffset, trueAngle);
-            }
-        }
-
-        private Vector2 clampAngle(Vector2 angle)
-        {
-            // Y is yaw around the object, we need a range from -180 to +180
-            float clampY = angle.y > 180 ? angle.y - 360 : angle.y;
-
-            // X is pitch around the object, we need a range from -90 to +90
-            float clampX = angle.x;
-            if (clampX > 90) clampX = 90;
-            else if (clampX < -90) clampX = -90;
-
-            return new Vector2(clampX, clampY);
-        }
-
-        private Quaternion FixAngleToTarget (Vector3 euler)
-        {
-            Quaternion desired = Quaternion.Euler(euler);
-            Quaternion target = ViewTarget.transform.rotation;
-
-            return target * desired;
-        }
-
-        private void AlignViewAndPosition (Vector3 offset, Quaternion rotation)
-        {
-            transform.rotation = rotation;
-            CameraPosition = ViewTarget.Position + offset;
-
-            if (!DPCWorld.Singleton.WrapSpace)
-            {
-                transform.position = (Vector3)CameraPosition;
-            }
         }
 
         // We position objects here because of the reversed camera-object hierarchy.
@@ -160,7 +31,7 @@ namespace DoublePreciseCoords.Cameras
         {
             if(DPCWorld.Singleton.WrapSpace)
             {
-                foreach (DPCObject obj in ViewCache)
+                foreach (DPCObject obj in DPCWorld.AllBodies)
                 {
                     ScaleObjectToView(obj);
                 }
