@@ -33,6 +33,8 @@ namespace DoublePreciseCoords
 
         [field: SerializeField]
         public bool WrapSpace { get; protected set; } = true;
+        [field: SerializeField]
+        public bool ImplyPositionFromScene { get; protected set; } = true;
 
         public static bool Exists ()
         {
@@ -75,6 +77,17 @@ namespace DoublePreciseCoords
             AllBodies.Remove(body);
 
             //OnBodiesChanged();
+        }
+
+        protected virtual void Start ()
+        {
+            if(!WrapSpace || ImplyPositionFromScene)
+            {
+                foreach(var body in AllBodies)
+                {
+                    body.SyncPosition();
+                }
+            }
         }
 
         protected virtual void FixedUpdate()
