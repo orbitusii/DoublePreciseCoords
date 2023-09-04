@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using loki_geo;
 using DoublePreciseCoords.Cameras;
 
 namespace DoublePreciseCoords
@@ -67,7 +68,7 @@ namespace DoublePreciseCoords
         public void SyncPosition ()
         {
             Vector3 delta = transform.position - LastRawPosition;
-            MovePosition(delta);
+            MovePosition(delta.ToWGS());
         }
 
         public void MovePosition (Vector64 delta)

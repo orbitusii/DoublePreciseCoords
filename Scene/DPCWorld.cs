@@ -1,8 +1,8 @@
 /*
 
 CVW-5 Prototype 2: Body Wrapper Hub
-Author: Dan Lodholm (github: orbitusii)
-Copyright: 2022
+Author: Robin Lodholm (github: orbitusii)
+Copyright: 2023
 
 */
 
@@ -126,7 +126,7 @@ namespace DoublePreciseCoords
                     // Place objects in the world
                     foreach (DPCObject body in group.Bodies)
                     {
-                        Vector3 positionOffset = (Vector3)(body.Position - group.Start);
+                        Vector3 positionOffset = (body.Position - group.Start).ToVector3();
                         body.SetRawPosition(startCorner + positionOffset);
                     }
 
@@ -174,7 +174,7 @@ namespace DoublePreciseCoords
 
                 foreach (var body in AllBodies)
                 {
-                    body.Position = body.transform.position;
+                    body.Position = body.transform.position.ToWGS();
                 }
             }
 

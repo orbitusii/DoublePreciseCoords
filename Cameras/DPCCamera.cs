@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using loki_geo;
 
 namespace DoublePreciseCoords.Cameras
 {
@@ -40,7 +41,7 @@ namespace DoublePreciseCoords.Cameras
 
         protected void ScaleObjectToView(DPCObject obj)
         {
-            Vector3 unscaled = (Vector3)(obj.Position - CameraPosition);
+            Vector3 unscaled = (obj.Position - CameraPosition).ToVector3();
 
             // This is called D0 for reasons explained below.
             float D0 = unscaled.magnitude;

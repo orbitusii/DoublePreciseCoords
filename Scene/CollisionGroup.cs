@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using loki_geo;
 
 namespace DoublePreciseCoords
 {
@@ -46,8 +47,8 @@ namespace DoublePreciseCoords
         {
             Bodies = new List<DPCObject> { body };
 
-            Start = body.Position - Vector3.one * body.BoundingRadius;
-            End = body.Position + Vector3.one * body.BoundingRadius;
+            Start = body.Position - Vector3.one.ToWGS() * body.BoundingRadius;
+            End = body.Position + Vector3.one.ToWGS() * body.BoundingRadius;
 
             _cntr_cached = true;
             _cntr = (Start + End) / 2;
@@ -57,8 +58,8 @@ namespace DoublePreciseCoords
         {
             if (Bodies.Count < 1) return;
 
-            Start = Start = Bodies[0].Position - Vector3.one * Bodies[0].BoundingRadius;
-            End = Bodies[0].Position + Vector3.one * Bodies[0].BoundingRadius;
+            Start = Start = Bodies[0].Position - Vector3.one.ToWGS() * Bodies[0].BoundingRadius;
+            End = Bodies[0].Position + Vector3.one.ToWGS() * Bodies[0].BoundingRadius;
 
             if (Bodies.Count > 1)
             {

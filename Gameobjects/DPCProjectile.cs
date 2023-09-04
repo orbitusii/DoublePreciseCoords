@@ -35,8 +35,11 @@ namespace DoublePreciseCoords
 
             Velocity = direction.normalized * (direction.magnitude + Data.LaunchSpeed);
 
-            GameObject effects = Instantiate(Data.EffectsPrefab, transform, false);
-            particles = effects.GetComponent(typeof(ParticleSystem)) as ParticleSystem;
+            if(Data.EffectsPrefab)
+            {
+                GameObject effects = Instantiate(Data.EffectsPrefab, transform, false);
+                particles = effects.GetComponent(typeof(ParticleSystem)) as ParticleSystem;
+            }
         }
 
         public void PushSteeringCommand (Vector2 inputVec)
@@ -62,9 +65,12 @@ namespace DoublePreciseCoords
 
                 Vector3 accel = transform.forward * (Data.Acceleration - (Velocity.sqrMagnitude * Data.Drag));
                 Vector3 gravity = Physics.gravity * Data.Gravity;
-                Vector3 steering = transform.right * Data.SteeringPower.x + transform.up * Data.SteeringPower.y;
 
-                Velocity += (accel + gravity + steering) * dt;
+                Vector3 steering = (transform.right * Data.SteeringPower.x * SteeringInput.x)+ (transform.up * Data.SteeringPower.y * SteeringInput.y);
+
+                float speed = Velocity.magnitude;
+
+                Velocity = (Velocity + (accel + gravity + steering) * dt).normalized * speed;
 
                 Vector3 lastPos = transform.position;
                 transform.position += Velocity * dt;
@@ -112,7 +118,7 @@ namespace DoublePreciseCoords
             SyncPosition();
             Interactable = false;
             Velocity = Vector3.zero;
-            particles.Play(true);
+            particles?.Play(true);
 
             Debug.Log($"Projectile {name} has detonated on object {hitObject}");
 

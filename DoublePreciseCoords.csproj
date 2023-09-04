@@ -21,11 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="loki-geo">
+      <HintPath>..\loki-geo\loki-geo\loki-geo\bin\Debug\net48\loki-geo.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.18f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="Vector64">
-      <HintPath>..\Vector64\bin\Debug\net48\Vector64.dll</HintPath>
     </Reference>
   </ItemGroup>
 
